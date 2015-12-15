@@ -66,7 +66,64 @@ def decide(input_file, countries_file):
         "Accept", "Reject", and "Quarantine"
     """
 
-    return ["Reject"]
+    entries_file = open(input_file)
+    entries_string = entries_file.read()
+    entries_data = json.loads(entries_string)
+    entries_file.close()
+
+    file_of_countries = open(countries_file)
+    countries_string = file_of_countries.read()
+    global COUNTRIES
+    COUNTRIES = json.loads(countries_string)
+    file_of_countries.close()
+
+    final_decision_list = []
+
+    for entry in entries_data:
+        decision_list = []
+
+        if not check_required_fields(entry):
+            decision_list.append("Reject")
+
+        if not valid_passport_format(entry['passport']):
+            decision_list.append("Reject")
+
+        if not valid_date_format(entry['birth_date']):
+            decision_list.append("Reject")
+
+        if not known_location(entry['from']) or not known_location(entry['home']):
+            decision_list.append("Reject")
+
+        if "via" in entry:
+            if not known_location(entry['via']):
+                decision_list.append("Reject")
+            if known_location(entry['via']) and check_quarantine(entry['via']):
+                decision_list.append("Quarantine")
+
+        if check_home(entry['home']):
+            decision_list.append("Accept")
+
+        if check_quarantine(entry['from']):
+            decision_list.append("Quarantine")
+
+        if check_visa_requirement(entry["from"], entry["entry reason"]):
+            if "visa" not in entry:
+                decision_list.append("Reject")
+            else:
+                if not valid_date_format(entry["visa"]["date"]):
+                    decision_list.append("Reject")
+                else:
+                    if is_more_than_x_years_ago(2,entry["visa"]["date"]):
+                        decision_list.append("Reject")
+                    if not valid_visa_format(entry["visa"]["code"]):
+                        decision_list.append("Reject")
+
+        decision_list.append("Accept")
+        final_decision = conflict_decision_resolver(decision_list)
+        final_decision_list.append(final_decision)
+
+
+    return final_decision_list
 
 
 def valid_passport_format(passport_number):
