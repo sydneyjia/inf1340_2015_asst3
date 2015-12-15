@@ -132,25 +132,7 @@ def valid_passport_format(passport_number):
     :param passport_number: alpha-numeric string
     :return: Boolean; True if the format is valid, False otherwise
     """
-     # separate the passport number by dashes
-    checklist = passport_number.split('-')
-
-    # if total number of character groups is not five, the format is not valid
-    if len(checklist) != 5:
-        return False
-
-    # check each group of character
-    for i in range(5):
-
-        # if total number of characters in each group is not five, the format is not valid
-        if len(checklist[i]) != 5:
-            return False
-
-        # if a character is not alphanumeric, the format is not valid
-        if not checklist[i].isalnum():
-            return False
-
-    # passed all checks, the format is valid
+     
     return True
 
 
